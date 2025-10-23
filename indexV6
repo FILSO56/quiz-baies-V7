@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz des Baies</title>
+<style>
+  body {
+    font-family: "Arial", sans-serif;
+    background: linear-gradient(135deg, #f9d29d, #ffd1dc);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 10px;
+  }
+  .container {
+    background: white;
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+    text-align: center;
+    max-width: 100%;
+    width: 400px;
+    opacity: 1;
+    transition: opacity 0.6s;
+  }
+  h1 { font-size: 1.8rem; margin-bottom: 10px; }
+  h2 { font-size: 1.4rem; margin: 10px 0; }
+  .question { font-size: 1.2rem; margin: 15px 0; }
+  img { width: 100%; max-width: 250px; margin: 10px 0; border-radius: 12px; }
+  button {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    margin: 8px 0;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  button:hover { transform: scale(1.03); }
+  .yes { background: #a7e9af; }
+  .no { background: #ffb3ba; }
+  .progress { margin-top: 15px; height: 10px; background: #eee; border-radius: 8px; overflow: hidden; }
+  .bar { height: 100%; width: 0%; background: #6a5acd; transition: width 0.6s; }
+
+  /* 🌙 Mode sombre automatique */
+  @media (prefers-color-scheme: dark) {
+    body {
+      background: linear-gradient(135deg, #2c3e50, #4ca1af);
+      color: #f1f1f1;
+    }
+    .container {
+      background: #1e1e1e;
+      color: #f1f1f1;
+      box-shadow: 0 6px 15px rgba(255,255,255,0.1);
+    }
+    button {
+      color: #1e1e1e;
+    }
+    .progress { background: #444; }
+    .bar { background: #9b59b6; }
+  }
+</style>
+</head>
+<body>
+<div class="container" id="game">
+  <img src="image.png" alt="Illustration des baies">
+  <h1>Quiz des Baies</h1>
+  <button onclick="startGame()">Commencer</button>
+</div>
+
+
+<script>
+const quiz1 = [
+  { q: "La fraise est une baie ?", a: false, exp: "Non, c’est un faux-fruit issu du réceptacle floral.", img: "fraise.png" },
+  { q: "La myrtille est une baie ?", a: true, exp: "Oui, c’est une vraie baie charnue avec plusieurs graines incluses dans la pulpe.", img: "myrtille.png" },
+  { q: "La mûre sauvage est une baie ?", a: false, exp: "Non, c’est un fruit multiple formé de plusieurs petites drupes, chacune ayant un noyau.", img: "mure.png" },
+  { q: "La courgette est une baie ?", a: true, exp: "Oui, la courgette est une baie particulière appelée péponide.", img: "courgette.png" },
+  { q: "L'avocat est une baie ?", a: true, exp: "Oui, c’est une baie, un fruit charnu à graine unique", img: "avocat.png" },
+  { q: "La cerise est une baie ?", a: false, exp: "Non, c’est une drupe avec un noyau à l’intérieur.", img: "cerise.png" },
+  { q: "Le kiwi est une baie ?", a: true, exp: "Oui, c’est une grosse baie charnue contenant de très nombreuses graines.", img: "kiwi.png" }
+];
+
+const quiz2 = [
+  { q: "Faut-il être sûr à 100% de l’identité d’une baie avant de la manger ?", a: true, exp: "Oui, certaines baies sont toxiques. En cas de doute, ne pas consommer", img: "houx.png" },
+  { q: "Certaines baies rouges peuvent être toxiques ?", a: true, exp: "Oui, par exemple le houx, ou la douce-amère.", img: "douce.png" },
+  { q: "Peut-on cueillir des baies dans une réserve naturelle protégée ?", a: false, exp: "Non, c’est interdit par la loi.", img: "rndf.png" },
+  { q: "Faut-il photographier sa cueillette ?", a: true, exp: "Oui, pour en facilietr l'identification en cas d'intoxication.", img: "photo.png" },
+  { q: "Cueillir les baies immatures est une bonne pratique ?", a: false, exp: "Non, il faut attendre leur maturité, car elles peuvent être toxiques.", img: "vertes.png" },
+  { q: "Je vois un oiseau manger une baie, puis-je en faire autant sans risquer d'être malade?", a: false, exp: "Non, ce qui est bon pour un autre animal peut être toxique pour l'être humain.", img: "oiseau.png" },
+];
+
+const allQuizzes = [quiz1, quiz2];
+let currentQuiz = 0;
+let index = 0;
+let score = 0;
+const gameDiv = document.getElementById("game");
+
+function startGame() {
+  currentQuiz = 0;
+  index = 0;
+  score = 0;
+  showQuestion();
+}
+
+function showQuestion() {
+  const quiz = allQuizzes[currentQuiz];
+  if (index < quiz.length) {
+    const progress = ((currentQuiz * quiz1.length + index) / (quiz1.length + quiz2.length)) * 100;
+    gameDiv.style.opacity = 0;
+    setTimeout(() => {
+      gameDiv.innerHTML = `
+        <h2>Question ${currentQuiz * quiz1.length + index + 1}</h2>
+        <p class="question">${quiz[index].q}</p>
+        <img src="${quiz[index].img}" alt="Illustration">
+        <button class="yes" onclick="answer(true)">✅ Oui</button>
+        <button class="no" onclick="answer(false)">❌ Non</button>
+        <div class="progress"><div class="bar" style="width:${progress}%"></div></div>
+      `;
+      gameDiv.style.opacity = 1;
+    }, 300);
+  } else {
+    if (currentQuiz === 0) showTransition();
+    else showResult();
+  }
+}
+
+function answer(resp) {
+  const quiz = allQuizzes[currentQuiz];
+  const correct = resp === quiz[index].a;
+  if (correct) score++;
+  alert(quiz[index].exp);
+  index++;
+  showQuestion();
+}
+
+function showTransition() {
+  gameDiv.innerHTML = `
+    <img src="cueillette.png" alt="Bonnes pratiques de cueillette">
+    <h2>👏 Bravo ! Première partie terminée</h2>
+    <p>Prêt(e) pour les bonnes pratiques de cueillette ? 🌿</p>
+    <button onclick="startSecondQuiz()">Commencer la 2ᵉ partie</button>
+  `;
+}
+
+function startSecondQuiz() {
+  currentQuiz = 1;
+  index = 0;
+  showQuestion();
+}
+
+function showResult() {
+  const progress = 100;
+  const total = quiz1.length + quiz2.length;
+  gameDiv.style.opacity = 0;
+  setTimeout(() => {
+    gameDiv.innerHTML = `
+      <h2>🎉 Fin du jeu ! 🎉</h2>
+      <p>Ton score final : <strong>${score}/${total}</strong></p>
+      <p>${score >= 11 ? "Bravo, tu es un expert en baies et en cueillette responsable ! 🏆" : "Pas mal, mais tu peux encore progresser 😉"}</p>
+	  
+	   <!-- Logo et lien -->
+          <div style="margin-top:20px; text-align:center;">
+            <a href="https://www.shpr.info" target="_blank" style="text-decoration:none; color:inherit;">
+              <img src="logo.png" alt="Logo du site" style="width:150px; display:block; margin:0 auto 10px;">
+              <span>Visite notre site ! 🌐</span>
+            </a>
+          </div>
+		  
+      <button onclick="startGame()">Rejouer</button>
+      <div class="progress"><div class="bar" style="width:${progress}%"></div></div>
+    `;
+    gameDiv.style.opacity = 1;
+  }, 300);
+}
+</script>
+</body>
+</html>
